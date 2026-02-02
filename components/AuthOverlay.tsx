@@ -5,10 +5,11 @@ import { AuthUser } from '../types';
 interface AuthOverlayProps {
   onAuthSuccess: (user: AuthUser) => void;
   onClose: () => void;
+  initialIsLogin?: boolean;
 }
 
-const AuthOverlay: React.FC<AuthOverlayProps> = ({ onAuthSuccess, onClose }) => {
-  const [isLogin, setIsLogin] = useState(true);
+const AuthOverlay: React.FC<AuthOverlayProps> = ({ onAuthSuccess, onClose, initialIsLogin = true }) => {
+  const [isLogin, setIsLogin] = useState(initialIsLogin);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);

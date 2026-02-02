@@ -30,6 +30,7 @@ const App: React.FC = () => {
 
   const [currentBatch, setCurrentBatch] = useState<LogoBatch | null>(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [authIsLogin, setAuthIsLogin] = useState(true);
   const [view, setView] = useState<'landing' | 'generator'>('landing');
   const [initialBrandName, setInitialBrandName] = useState('');
 
@@ -49,7 +50,7 @@ const App: React.FC = () => {
 
   const handleGenerate = async (config: LogoConfig) => {
     if (!state.user) {
-      setShowAuth(true);
+      triggerAuth(true);
       return;
     }
 
@@ -88,55 +89,95 @@ const App: React.FC = () => {
     setView('landing');
   };
 
-  const startDesigning = (name: string) => {
-    setInitialBrandName(name);
+  // Redirection Logic from Landing Page
+  const handleStart = (name: string) => {
+    if (state.user) {
+      setInitialBrandName(name);
+      setView('generator');
+    } else {
+      setInitialBrandName(name); // Store it to use after login
+      triggerAuth(true); // "If not clicking on generate should take to login page"
+    }
+  };
+
+  const handleSignUpClick = () => {
+    if (state.user) {
+      setView('generator');
+    } else {
+      triggerAuth(false);
+    }
+  };
+
+  const handleLoginClick = () => {
+    if (state.user) {
+      setView('generator');
+    } else {
+      triggerAuth(true);
+    }
+  };
+
+  const triggerAuth = (isLogin: boolean) => {
+    setAuthIsLogin(isLogin);
+    setShowAuth(true);
+  };
+
+  const onAuthSuccess = (user: AuthUser) => {
+    setState(prev => ({ ...prev, user }));
+    setShowAuth(false);
+    // After successful auth, if they came from landing, send them to the lab
     setView('generator');
   };
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-orange-500/30">
-      <header className="fixed top-4 left-4 right-4 z-[60]">
-        <div className="max-w-[1600px] mx-auto hud-border rounded-2xl px-6 py-3 flex items-center justify-between shadow-2xl">
-          <div className="flex items-center gap-4 cursor-pointer group" onClick={resetView}>
-            <div className="relative">
-              <div className="absolute -inset-1 bg-orange-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-500"></div>
-              <div className="relative bg-black w-10 h-10 rounded-lg flex items-center justify-center border border-white/10 group-hover:border-orange-500/50 transition-all">
-                <FiyanixLogo className="w-7 h-7" />
+      {view === 'generator' && (
+        <header className="fixed top-4 left-4 right-4 z-[60]">
+          <div className="max-w-[1600px] mx-auto hud-border rounded-2xl px-6 py-3 flex items-center justify-between shadow-2xl">
+            <div className="flex items-center gap-4 cursor-pointer group" onClick={resetView}>
+              <div className="relative">
+                <div className="absolute -inset-1 bg-orange-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-500"></div>
+                <div className="relative bg-black w-10 h-10 rounded-lg flex items-center justify-center border border-white/10 group-hover:border-orange-500/50 transition-all">
+                  <FiyanixLogo className="w-7 h-7" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-lg font-black tracking-tighter uppercase leading-none">Fiyanix <span className="text-orange-500">Logo Gen</span></h1>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
+                  <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">System: Online</span>
+                </div>
               </div>
             </div>
-            <div>
-              <h1 className="text-lg font-black tracking-tighter uppercase leading-none">Fiyanix <span className="text-orange-500">Logo Gen</span></h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
-                <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">System: Online</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-6">
-            <nav className="hidden md:flex items-center gap-8 font-mono text-[10px] uppercase tracking-[0.3em] text-slate-500">
-              <button onClick={() => setView('landing')} className={`transition-colors ${view === 'landing' ? 'text-orange-500' : 'hover:text-orange-500'}`}>Home</button>
-              <button onClick={() => setView('generator')} className={`transition-colors ${view === 'generator' ? 'text-orange-500' : 'hover:text-orange-500'}`}>Lab</button>
-            </nav>
+            
+            <div className="flex items-center gap-6">
+              <nav className="hidden md:flex items-center gap-8 font-mono text-[10px] uppercase tracking-[0.3em] text-slate-500">
+                <button onClick={() => setView('landing')} className="transition-colors hover:text-orange-500">Home</button>
+                <button onClick={() => setView('generator')} className="text-orange-500 transition-colors">Lab</button>
+              </nav>
 
-            <div className="flex items-center gap-4">
-              {state.user ? (
-                <UserMenu user={state.user} onLogout={handleLogout} onVerify={handleVerify} />
-              ) : (
-                <button 
-                  onClick={() => setShowAuth(true)}
-                  className="px-6 py-2 bg-orange-600/10 border border-orange-500/20 hover:border-orange-500 rounded-xl text-[10px] font-black uppercase tracking-widest text-orange-500 transition-all"
-                >
-                  Log In
-                </button>
-              )}
+              <div className="flex items-center gap-4">
+                {state.user ? (
+                  <UserMenu user={state.user} onLogout={handleLogout} onVerify={handleVerify} />
+                ) : (
+                  <button 
+                    onClick={() => triggerAuth(true)}
+                    className="px-6 py-2 bg-orange-600/10 border border-orange-500/20 hover:border-orange-500 rounded-xl text-[10px] font-black uppercase tracking-widest text-orange-500 transition-all"
+                  >
+                    Log In
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {view === 'landing' ? (
-        <LandingPage onStart={startDesigning} />
+        <LandingPage 
+          onStart={handleStart} 
+          onLogin={handleLoginClick} 
+          onSignUp={handleSignUpClick}
+        />
       ) : (
         <main className="flex-1 max-w-[1700px] mx-auto w-full px-4 pt-32 pb-12 grid grid-cols-1 xl:grid-cols-12 gap-8 animate-in fade-in zoom-in-95 duration-700">
           <div className="xl:col-span-3">
@@ -166,16 +207,6 @@ const App: React.FC = () => {
                   initialBrandName={initialBrandName}
                 />
               </div>
-              
-              <div className="hud-border rounded-2xl p-5 hidden xl:block space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">Engine Load</span>
-                  <span className="text-[9px] font-mono text-orange-500">Ready</span>
-                </div>
-                <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-gradient-to-r from-orange-800 to-orange-500 h-full w-[100%] shadow-[0_0_15px_#ff6600]"></div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -202,7 +233,8 @@ const App: React.FC = () => {
 
       {showAuth && (
         <AuthOverlay 
-          onAuthSuccess={(u) => { setState(p => ({...p, user: u})); setShowAuth(false); }} 
+          initialIsLogin={authIsLogin}
+          onAuthSuccess={onAuthSuccess} 
           onClose={() => setShowAuth(false)} 
         />
       )}
