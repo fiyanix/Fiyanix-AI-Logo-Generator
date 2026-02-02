@@ -3,7 +3,6 @@ import { AppState, LogoConfig, LogoBatch, LogoPair, AuthUser } from './types';
 import LogoForm from './components/LogoForm';
 import LogoDisplay from './components/LogoDisplay';
 import HistoryGallery from './components/HistoryGallery';
-import ApiKeyOverlay from './components/ApiKeyOverlay';
 import AuthOverlay from './components/AuthOverlay';
 import UserMenu from './components/UserMenu';
 import LandingPage from './components/LandingPage';
@@ -24,7 +23,6 @@ const FiyanixLogo: React.FC<{ className?: string }> = ({ className }) => (
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>({
     user: authService.getCurrentUser(),
-    isKeySelected: false,
     isLoading: false,
     history: [],
     error: null,
@@ -34,27 +32,6 @@ const App: React.FC = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [view, setView] = useState<'landing' | 'generator'>('landing');
   const [initialBrandName, setInitialBrandName] = useState('');
-
-  useEffect(() => {
-    const checkKey = async () => {
-      try {
-        const hasKey = await window.aistudio.hasSelectedApiKey();
-        setState(prev => ({ ...prev, isKeySelected: hasKey }));
-      } catch (err) {
-        console.error("Failed to check API key status", err);
-      }
-    };
-    checkKey();
-  }, []);
-
-  const handleSelectKey = async () => {
-    try {
-      await window.aistudio.openSelectKey();
-      setState(prev => ({ ...prev, isKeySelected: true }));
-    } catch (err) {
-      console.error("Failed to open key selection", err);
-    }
-  };
 
   const handleLogout = () => {
     authService.logout();
@@ -101,16 +78,7 @@ const App: React.FC = () => {
       }));
     } catch (err: any) {
       const errorMessage = err.message || "Something went wrong. Please check your connection.";
-      if (errorMessage.includes("Requested entity was not found")) {
-        setState(prev => ({ 
-          ...prev, 
-          isLoading: false, 
-          isKeySelected: false, 
-          error: "Your API key is not valid. Please select a key from a paid project." 
-        }));
-      } else {
-        setState(prev => ({ ...prev, isLoading: false, error: errorMessage }));
-      }
+      setState(prev => ({ ...prev, isLoading: false, error: errorMessage }));
     }
   };
 
@@ -139,8 +107,8 @@ const App: React.FC = () => {
             <div>
               <h1 className="text-lg font-black tracking-tighter uppercase leading-none">Fiyanix <span className="text-orange-500">Logo Gen</span></h1>
               <div className="flex items-center gap-2 mt-0.5">
-                <div className={`w-1.5 h-1.5 rounded-full ${state.isKeySelected ? 'bg-orange-500 animate-pulse' : 'bg-red-500'}`}></div>
-                <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">System: {state.isKeySelected ? 'Online' : 'Offline'}</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
+                <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">System: Online</span>
               </div>
             </div>
           </div>
@@ -173,7 +141,6 @@ const App: React.FC = () => {
         <main className="flex-1 max-w-[1700px] mx-auto w-full px-4 pt-32 pb-12 grid grid-cols-1 xl:grid-cols-12 gap-8 animate-in fade-in zoom-in-95 duration-700">
           <div className="xl:col-span-3">
             <div className="sticky top-32 space-y-6">
-              {/* Back to Home Action Button */}
               <button 
                 onClick={resetView}
                 className="group w-full flex items-center gap-4 px-6 py-4 hud-border border-white/5 rounded-2xl hover:border-orange-500/40 hover:bg-orange-500/5 transition-all mb-4"
@@ -195,8 +162,6 @@ const App: React.FC = () => {
                 <LogoForm 
                   onGenerate={handleGenerate} 
                   isLoading={state.isLoading} 
-                  isKeySelected={state.isKeySelected} 
-                  onSelectKey={handleSelectKey} 
                   user={state.user}
                   initialBrandName={initialBrandName}
                 />
@@ -235,7 +200,6 @@ const App: React.FC = () => {
         </main>
       )}
 
-      {!state.isKeySelected && view === 'generator' && <ApiKeyOverlay onSelectKey={handleSelectKey} />}
       {showAuth && (
         <AuthOverlay 
           onAuthSuccess={(u) => { setState(p => ({...p, user: u})); setShowAuth(false); }} 

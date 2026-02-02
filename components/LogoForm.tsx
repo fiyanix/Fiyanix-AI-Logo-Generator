@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { LogoConfig, ImageSize, LogoLayout, ColorTheme, AspectRatio, AuthUser } from '../types';
+import { LogoConfig, ImageSize, ColorTheme, AspectRatio, AuthUser } from '../types';
 
 interface LogoFormProps {
   onGenerate: (config: LogoConfig) => void;
   isLoading: boolean;
-  isKeySelected: boolean;
-  onSelectKey: () => void;
   user: AuthUser | null;
   initialBrandName?: string;
 }
 
-const LogoForm: React.FC<LogoFormProps> = ({ onGenerate, isLoading, isKeySelected, onSelectKey, user, initialBrandName }) => {
+const LogoForm: React.FC<LogoFormProps> = ({ onGenerate, isLoading, user, initialBrandName }) => {
   const [brandName, setBrandName] = useState(initialBrandName || '');
   const [brandDescription, setBrandDescription] = useState('');
   const [imageSize, setImageSize] = useState<ImageSize>('1K');
@@ -26,11 +24,6 @@ const LogoForm: React.FC<LogoFormProps> = ({ onGenerate, isLoading, isKeySelecte
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return onGenerate({ brandName, brandDescription, imageSize, aspectRatio, style, layout: 'side-by-side', colorTheme });
-    if (!isKeySelected) {
-      onSelectKey();
-      return;
-    }
     onGenerate({
       brandName,
       brandDescription: brandDescription.trim() || undefined,

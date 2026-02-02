@@ -36,20 +36,7 @@ export interface LogoBatch {
 
 export interface AppState {
   user: AuthUser | null;
-  isKeySelected: boolean;
   isLoading: boolean;
   history: LogoBatch[];
   error: string | null;
-}
-
-declare global {
-  interface AIStudio {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-  }
-
-  interface Window {
-    // Fixed: Added the readonly modifier to ensure compatibility with host-provided declarations of the Window interface.
-    readonly aistudio: AIStudio;
-  }
 }
