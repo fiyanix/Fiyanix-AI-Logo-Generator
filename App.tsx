@@ -10,13 +10,18 @@ import { generateLogoImage } from './services/geminiService';
 import { authService } from './services/authService';
 
 const FiyanixLogo: React.FC<{ className?: string }> = ({ className }) => (
-  <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="10" y="35" width="25" height="5" fill="#FF6600" />
-    <rect x="25" y="42" width="10" height="2" fill="#FF6600" />
-    <rect x="2" y="52" width="10" height="5" fill="#FF6600" />
-    <rect x="25" y="52" width="15" height="5" fill="#FF6600" />
-    <rect x="15" y="62" width="28" height="5" fill="#FF6600" />
-    <path d="M36 30H92L80 44H36V54H82L70 68H36V88L50 88V72H53L43 88H36V30Z" fill="#FF6600" />
+  <svg viewBox="0 0 100 100" className={className} xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="38" stroke="white" strokeWidth="7" fill="none" />
+    <g fill="#FF6600">
+      {/* Speed blocks on the left */}
+      <rect x="10" y="35" width="25" height="5" />
+      <rect x="25" y="42" width="10" height="2" />
+      <rect x="2" y="52" width="10" height="5" />
+      <rect x="25" y="52" width="15" height="5" />
+      <rect x="15" y="62" width="28" height="5" />
+      {/* The main stylized 'F' */}
+      <path d="M36 30H92L80 44H36V54H82L70 68H36V88L50 88V72H53L43 88H36V30Z" />
+    </g>
   </svg>
 );
 
@@ -89,14 +94,13 @@ const App: React.FC = () => {
     setView('landing');
   };
 
-  // Redirection Logic from Landing Page
   const handleStart = (name: string) => {
     if (state.user) {
       setInitialBrandName(name);
       setView('generator');
     } else {
-      setInitialBrandName(name); // Store it to use after login
-      triggerAuth(true); // "If not clicking on generate should take to login page"
+      setInitialBrandName(name);
+      triggerAuth(true);
     }
   };
 
@@ -124,7 +128,6 @@ const App: React.FC = () => {
   const onAuthSuccess = (user: AuthUser) => {
     setState(prev => ({ ...prev, user }));
     setShowAuth(false);
-    // After successful auth, if they came from landing, send them to the lab
     setView('generator');
   };
 
@@ -174,9 +177,11 @@ const App: React.FC = () => {
 
       {view === 'landing' ? (
         <LandingPage 
+          user={state.user}
           onStart={handleStart} 
           onLogin={handleLoginClick} 
           onSignUp={handleSignUpClick}
+          onLogout={handleLogout}
         />
       ) : (
         <main className="flex-1 max-w-[1700px] mx-auto w-full px-4 pt-32 pb-12 grid grid-cols-1 xl:grid-cols-12 gap-8 animate-in fade-in zoom-in-95 duration-700">

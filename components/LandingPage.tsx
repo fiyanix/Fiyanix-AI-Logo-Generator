@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
+import { AuthUser } from '../types';
 
 const FiyanixLogo: React.FC<{ className?: string }> = ({ className }) => (
-  <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="10" y="35" width="25" height="5" fill="#FF6600" />
-    <path d="M36 30H92L80 44H36V54H82L70 68H36V88L50 88V72H53L43 88H36V30Z" fill="#FF6600" />
+  <svg viewBox="0 0 100 100" className={className} xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="38" stroke="white" strokeWidth="7" fill="none" />
+    <g fill="#FF6600">
+      <rect x="10" y="35" width="25" height="5" />
+      <rect x="25" y="42" width="10" height="2" />
+      <rect x="2" y="52" width="10" height="5" />
+      <rect x="25" y="52" width="15" height="5" />
+      <rect x="15" y="62" width="28" height="5" />
+      <path d="M36 30H92L80 44H36V54H82L70 68H36V88L50 88V72H53L43 88H36V30Z" />
+    </g>
   </svg>
 );
 
 interface LandingPageProps {
+  user: AuthUser | null;
   onStart: (brandName: string) => void;
   onLogin: () => void;
   onSignUp: () => void;
+  onLogout: () => void;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onSignUp }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ user, onStart, onLogin, onSignUp, onLogout }) => {
   const [name, setName] = useState('');
 
   return (
@@ -22,7 +32,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onSignUp })
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-black/80 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-black border border-white/10 rounded-lg flex items-center justify-center">
               <FiyanixLogo className="w-7 h-7" />
             </div>
             <div>
@@ -30,36 +40,78 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onSignUp })
               <div className="text-[10px] text-slate-500 font-mono uppercase tracking-widest mt-1">AI Logo Generator</div>
             </div>
           </div>
-          <div className="flex items-center gap-8">
-            <button onClick={onLogin} className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">Login</button>
-            <button 
-              onClick={onSignUp}
-              className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-3.5 rounded font-black text-xs uppercase tracking-widest transition-all"
-            >
-              Get Started Free
-            </button>
+          
+          <div className="flex items-center gap-6">
+            {user ? (
+              <div className="flex items-center gap-4 bg-white/5 border border-white/10 pl-5 pr-2 py-1.5 rounded-full backdrop-blur-xl">
+                <div className="hidden sm:block text-right">
+                  <p className="text-[10px] font-black uppercase tracking-widest leading-none text-white">
+                    {user.displayName || user.email.split('@')[0]}
+                  </p>
+                  <p className="text-[8px] font-mono text-orange-500 uppercase tracking-widest mt-1">Lab Active</p>
+                </div>
+                <div className="h-8 w-px bg-white/10 mx-1 hidden sm:block"></div>
+                <button 
+                  onClick={onLogout}
+                  className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors"
+                >
+                  Logout
+                </button>
+                <button 
+                  onClick={() => onStart('')}
+                  className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-orange-600/20"
+                >
+                  Enter Lab
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-8">
+                <button onClick={onLogin} className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">Login</button>
+                <button 
+                  onClick={onSignUp}
+                  className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-3.5 rounded font-black text-xs uppercase tracking-widest transition-all"
+                >
+                  Get Started Free
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-52 pb-32 px-6">
-        <div className="max-w-7xl mx-auto text-center">
+      <section className="pt-52 pb-32 px-6 relative overflow-hidden">
+        {user && (
+          <div className="absolute top-40 left-1/2 -translate-x-1/2 w-full max-w-lg opacity-20 pointer-events-none">
+             <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-orange-500 to-transparent"></div>
+          </div>
+        )}
+        
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/5 rounded-full mb-8">
+            <span className={`w-2 h-2 rounded-full ${user ? 'bg-orange-500 animate-pulse' : 'bg-slate-700'}`}></span>
+            <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-slate-400">
+              {user ? 'Session: Active Profile' : 'System: Ready for Brand Input'}
+            </span>
+          </div>
+
           <h1 className="text-7xl md:text-[140px] font-black tracking-tighter leading-[0.85] mb-8">
-            <span className="block mb-2">CREATE STUNNING</span>
-            <span className="text-orange-600">AI LOGOS</span>
+            <span className="block mb-2">{user ? 'RESUME YOUR' : 'CREATE STUNNING'}</span>
+            <span className="text-orange-600">{user ? 'DESIGN LAB' : 'AI LOGOS'}</span>
           </h1>
           
           <p className="max-w-3xl mx-auto text-slate-400 text-lg md:text-xl font-normal mb-16 leading-relaxed">
-            Generate professional, unique logos in seconds with the power of AI. No design experience needed. Perfect for startups, brands, and entrepreneurs.
+            {user 
+              ? `Welcome back, ${user.displayName || 'Designer'}. Continue building your brand identity with our advanced neural design engine.`
+              : "Generate professional, unique logos in seconds with the power of AI. No design experience needed. Perfect for startups, brands, and entrepreneurs."}
           </p>
 
-          <div className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-0 bg-[#0A0A0A] border border-white/10 rounded-lg overflow-hidden focus-within:border-orange-500/50 transition-colors">
+          <div className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-0 bg-[#0A0A0A] border border-white/10 rounded-lg overflow-hidden focus-within:border-orange-500/50 transition-colors shadow-2xl">
             <input 
               type="text" 
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter Your Brand Name..."
+              placeholder={user ? "Continue working on..." : "Enter Your Brand Name..."}
               className="flex-1 bg-transparent px-8 py-6 text-white font-bold text-lg focus:outline-none placeholder:text-slate-700"
               onKeyDown={(e) => e.key === 'Enter' && onStart(name)}
             />
@@ -67,7 +119,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onSignUp })
               onClick={() => onStart(name)}
               className="px-12 py-6 bg-orange-600 hover:bg-orange-500 text-white font-black text-sm uppercase tracking-widest transition-all"
             >
-              Generate
+              {user ? 'Enter Lab' : 'Generate'}
             </button>
           </div>
         </div>
@@ -170,7 +222,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin, onSignUp })
       <footer className="py-20 bg-black border-t border-white/5 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="flex items-center gap-4">
-            <div className="w-8 h-8 bg-orange-600 rounded flex items-center justify-center">
+            <div className="w-8 h-8 bg-black border border-white/10 rounded flex items-center justify-center">
               <FiyanixLogo className="w-5 h-5" />
             </div>
             <span className="text-white font-black uppercase tracking-widest text-sm">Fiyanix Labs</span>

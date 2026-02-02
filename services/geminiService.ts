@@ -9,7 +9,6 @@ export const generateLogoImage = async (
   type: GenType = 'full',
   referenceImageBase64?: string
 ): Promise<string> => {
-  // Fix: Create a new GoogleGenAI instance right before making an API call to ensure it uses the most up-to-date API key
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const layoutInstruction = {
@@ -17,13 +16,8 @@ export const generateLogoImage = async (
     'stacked': `Layout Architecture: The logo must feature a clean minimalist symbol centered at the top and the brand name "${config.brandName}" centered directly below it in a modern typeface.`
   }[config.layout];
 
-  const colorInstruction = {
-    'Modern Blue': "Use professional shades of tech blue and cyan.",
-    'Energetic Orange': "Use vibrant orange and dark grey accents.",
-    'Sleek Dark': "Use a monochrome palette of deep charcoal, slate, and silver.",
-    'Vibrant Gradient': "Use a modern high-end gradient (e.g., purple-to-blue or orange-to-pink).",
-    'Monochrome': "Use strictly black and white for a timeless look."
-  }[config.colorTheme];
+  // Specific hex instruction for the model
+  const colorInstruction = `Use the specific hex codes provided for the brand identity. Primary Brand Color: ${config.primaryColor}. Secondary Brand Color: ${config.secondaryColor}. Ensure high contrast and professional visual hierarchy using these exact tones.`;
 
   const uniquenessHint = [
     "Focus on geometric abstraction and sharp angles.",
@@ -42,19 +36,17 @@ export const generateLogoImage = async (
       Variation Index: ${variationIndex}
       Design Style: ${config.style}
       Design Twist: ${uniquenessHint}
-      Color Scheme: ${colorInstruction}
+      Color Implementation: ${colorInstruction}
       ${layoutInstruction}
       
       Requirements:
-      - Pure flat vector design. No mockups, no 3D effects.
+      - Pure flat vector design. No mockups, no 3D effects, no shadows.
       - Solid white background (#FFFFFF).
       - Represent: ${config.brandDescription || 'innovation and quality'}.
       - The typography must be ultra-professional and high-end sans-serif.
     `;
     contents.parts.push({ text: prompt.trim() });
   } else {
-    // Note: Icon generation is currently bypassed in App.tsx for cost saving, 
-    // but the service logic is kept for potential future on-demand use.
     if (referenceImageBase64) {
       const base64Data = referenceImageBase64.split(',')[1] || referenceImageBase64;
       contents.parts.push({
@@ -67,7 +59,8 @@ export const generateLogoImage = async (
         Look at the provided logo image. Extract ONLY the iconic symbol/mark from it.
         Requirements:
         - REMOVE ALL TEXT. NO BRAND NAME. ONLY THE SYMBOL.
-        - The symbol must be identical in visual form, color, and style to the one in the reference image.
+        - Use the specific color palette: ${config.primaryColor} and ${config.secondaryColor}.
+        - The symbol must be identical in visual form to the one in the reference image.
         - Use a solid white background (#FFFFFF). 
         - The symbol should be centered.
         - Output a high-res flat vector-style image of JUST the mark.
@@ -78,7 +71,7 @@ export const generateLogoImage = async (
         Variation Index: ${variationIndex}
         Design Style: ${config.style}
         Design Twist: ${uniquenessHint}
-        Color Scheme: ${colorInstruction}
+        Palette: Primary ${config.primaryColor}, Secondary ${config.secondaryColor}
         
         Requirements:
         - NO TEXT. NO BRAND NAME. ONLY THE SYMBOL.
@@ -90,7 +83,6 @@ export const generateLogoImage = async (
     contents.parts.push({ text: prompt.trim() });
   }
 
-  // Fix: Upgrade to gemini-3-pro-image-preview for 2K resolution requests.
   const isPro = config.imageSize === '2K';
   const model = isPro ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
 
@@ -101,7 +93,6 @@ export const generateLogoImage = async (
       config: {
         imageConfig: {
           aspectRatio: config.aspectRatio,
-          // Fix: imageSize parameter is only supported on gemini-3-pro-image-preview
           ...(isPro ? { imageSize: config.imageSize } : {})
         }
       },
@@ -111,7 +102,6 @@ export const generateLogoImage = async (
        throw new Error("No response content received from the model.");
     }
 
-    // Fix: Iterate through all parts to find the image part as recommended.
     for (const part of response.candidates[0].content.parts) {
       if (part.inlineData) {
         return `data:image/png;base64,${part.inlineData.data}`;
@@ -122,7 +112,6 @@ export const generateLogoImage = async (
   } catch (error: any) {
     console.error("Gemini Image Gen Error:", error);
     const errorText = typeof error === 'string' ? error : (error.message || JSON.stringify(error));
-    
     throw new Error(errorText || "Failed to generate logo identity.");
   }
 };

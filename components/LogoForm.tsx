@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogoConfig, ImageSize, ColorTheme, AspectRatio, AuthUser } from '../types';
+import { LogoConfig, ImageSize, AspectRatio, AuthUser } from '../types';
 
 interface LogoFormProps {
   onGenerate: (config: LogoConfig) => void;
@@ -14,7 +14,8 @@ const LogoForm: React.FC<LogoFormProps> = ({ onGenerate, isLoading, user, initia
   const [imageSize, setImageSize] = useState<ImageSize>('1K');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
   const [style, setStyle] = useState('Flat & Minimal');
-  const [colorTheme, setColorTheme] = useState<ColorTheme>('Energetic Orange');
+  const [primaryColor, setPrimaryColor] = useState('#FF5F00');
+  const [secondaryColor, setSecondaryColor] = useState('#000000');
 
   useEffect(() => {
     if (initialBrandName) {
@@ -31,13 +32,12 @@ const LogoForm: React.FC<LogoFormProps> = ({ onGenerate, isLoading, user, initia
       aspectRatio,
       style,
       layout: 'side-by-side',
-      colorTheme
+      primaryColor,
+      secondaryColor
     });
   };
 
   const styles = ['Flat & Minimal', 'Corporate', 'Tech & Shapes', 'Line Art', 'Abstract'];
-  const colors: ColorTheme[] = ['Energetic Orange', 'Modern Blue', 'Sleek Dark', 'Vibrant Gradient', 'Monochrome'];
-
   const needsVerification = imageSize === '2K' && user && !user.emailVerified;
 
   return (
@@ -54,17 +54,52 @@ const LogoForm: React.FC<LogoFormProps> = ({ onGenerate, isLoading, user, initia
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        <div className="space-y-2">
-          <label className="text-[9px] font-mono text-slate-600 uppercase tracking-[0.3em] ml-1">Colors</label>
-          <select
-            value={colorTheme}
-            onChange={(e) => setColorTheme(e.target.value as ColorTheme)}
-            className="w-full bg-black border border-white/5 rounded-xl px-4 py-3.5 text-slate-300 focus:outline-none focus:border-orange-500/40 transition-all text-xs font-mono uppercase"
-          >
-            {colors.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+      {/* NEW COLOR PREFERENCES SECTION */}
+      <div className="space-y-4 pt-2">
+        <label className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Color Preferences</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-[9px] font-mono text-slate-500 uppercase tracking-widest ml-1">Primary Color</label>
+            <div className="flex items-center bg-black border border-white/5 rounded-xl overflow-hidden focus-within:border-orange-500/40 transition-all">
+              <div className="p-2 border-r border-white/5">
+                <input 
+                  type="color" 
+                  value={primaryColor} 
+                  onChange={(e) => setPrimaryColor(e.target.value.toUpperCase())}
+                  className="w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer p-0 block [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch]:rounded-lg" 
+                />
+              </div>
+              <input 
+                type="text" 
+                value={primaryColor}
+                onChange={(e) => setPrimaryColor(e.target.value.toUpperCase())}
+                className="flex-1 bg-transparent px-4 py-3 text-white font-mono text-xs uppercase focus:outline-none"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[9px] font-mono text-slate-500 uppercase tracking-widest ml-1">Secondary Color</label>
+            <div className="flex items-center bg-black border border-white/5 rounded-xl overflow-hidden focus-within:border-orange-500/40 transition-all">
+              <div className="p-2 border-r border-white/5">
+                <input 
+                  type="color" 
+                  value={secondaryColor} 
+                  onChange={(e) => setSecondaryColor(e.target.value.toUpperCase())}
+                  className="w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer p-0 block [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch]:rounded-lg" 
+                />
+              </div>
+              <input 
+                type="text" 
+                value={secondaryColor}
+                onChange={(e) => setSecondaryColor(e.target.value.toUpperCase())}
+                className="flex-1 bg-transparent px-4 py-3 text-white font-mono text-xs uppercase focus:outline-none"
+              />
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
         <div className="space-y-2">
           <label className="text-[9px] font-mono text-slate-600 uppercase tracking-[0.3em] ml-1">Design Style</label>
           <select
